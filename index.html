@@ -127,6 +127,34 @@
         <div class="costNote"><strong>目前不必付費：</strong>上傳、儲存、閱讀、編輯、畫重點與同步都可先用現有免費方案。只有「網站自己用 AI 讀圖並自動排版」才需要另外串 AI API。</div>
       </section>
 
+      <section id="pendingImportsSection" class="adminSection pendingSection">
+        <div class="sectionTitleRow">
+          <div>
+            <p class="eyebrow">已上傳的原始資料</p>
+            <h2>待整理區</h2>
+            <p class="muted">這裡只保存你上傳的照片與 PDF，不會直接改動正式課本。整理完成後可標記狀態或刪除原始檔。</p>
+          </div>
+          <button id="refreshImportsBtn" type="button">重新整理</button>
+        </div>
+        <div class="pendingToolbar">
+          <label>篩選狀態
+            <select id="importStatusFilter">
+              <option value="all">全部</option>
+              <option value="pending">待整理</option>
+              <option value="processing">整理中</option>
+              <option value="review">等待確認</option>
+              <option value="published">已加入課本</option>
+              <option value="archived">已封存</option>
+            </select>
+          </label>
+          <span id="pendingImportsCount" class="muted"></span>
+        </div>
+        <div id="pendingImportsMessage" class="formMessage"></div>
+        <div id="pendingImportsList" class="pendingImportsList">
+          <div class="empty">尚未載入待整理資料。</div>
+        </div>
+      </section>
+
       <section class="adminSection updateSection">
         <p class="eyebrow">整批更新</p>
         <h2>匯入整理好的課本更新包</h2>
