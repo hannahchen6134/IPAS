@@ -16,14 +16,14 @@
   <div id="authScreen" class="authScreen hidden">
     <section class="authCard" aria-labelledby="authTitle">
       <p class="eyebrow">iPAS 融合行動課本</p>
-      <h1 id="authTitle">登入你的課本</h1>
-      <p class="muted">登入後，文字修改、畫重點、閱讀狀態與個人筆記會同步到所有裝置。</p>
+      <h1 id="authTitle">管理者登入</h1>
+      <p class="muted">登入一次後會保留登入狀態；文字修改、畫重點與個人筆記會同步到所有裝置。</p>
       <label>電子郵件<input id="authEmail" type="email" autocomplete="email" placeholder="你的 Email"></label>
       <label>密碼<input id="authPassword" type="password" autocomplete="current-password" minlength="6" placeholder="至少 6 碼"></label>
       <div class="authActions">
         <button id="signInBtn" class="primary" type="button">登入</button>
-        <button id="signUpBtn" type="button">第一次使用，建立帳號</button>
       </div>
+      <p class="authHint">本網站不開放自行註冊。帳號由 Supabase 管理者建立。</p>
       <div id="authMessage" class="formMessage" aria-live="polite"></div>
     </section>
   </div>
@@ -51,7 +51,8 @@
         <button id="zoomIn" type="button">放大</button>
         <button id="fitBtn" type="button">適合畫面</button>
         <a id="sheetLink" class="buttonLink" target="_blank" rel="noreferrer">學習計畫</a>
-        <button id="adminBtn" class="adminOnly hidden" type="button">內容管理</button>
+        <button id="uploadTodayBtn" class="adminOnly hidden primary" type="button">＋ 上傳今天的課本</button>
+        <button id="adminBtn" class="adminOnly hidden" type="button">進階管理</button>
         <span id="syncStatus" class="syncStatus">準備中</span>
       </div>
     </header>
@@ -105,75 +106,84 @@
     <div class="adminBody">
       <section id="firstRunPanel" class="adminSection hidden">
         <h2>第一次建立資料</h2>
-        <p>資料庫目前是空的。按一次即可把原本 16 章課本資料匯入 Supabase。</p>
+        <p>資料庫目前是空的。按一次，把原本課本資料搬進 Supabase。</p>
         <button id="importSeedBtn" class="primary" type="button">匯入原本課本資料</button>
         <progress id="importProgress" max="100" value="0"></progress>
         <div id="importMessage" class="formMessage"></div>
       </section>
 
-      <section class="adminSection">
-        <h2>選取節點</h2>
-        <label>節點<select id="adminNodeSelect"></select></label>
+      <section id="dailyUploadSection" class="adminSection dailySection">
+        <p class="eyebrow">每天主要使用這裡</p>
+        <h2>上傳今天的課本</h2>
+        <p class="muted">照片或 PDF 會先安全存進「待整理區」，不會直接改動正式課本。這一步不使用 AI API。</p>
         <div class="formGrid">
-          <label>代碼<input id="nodeCode"></label>
-          <label>標題<input id="nodeTitle"></label>
-          <label>類型<select id="nodeKind"><option>concept</option><option>chapter</option><option>part</option><option>root</option></select></label>
-          <label>排序<input id="nodeSort" type="number" step="1"></label>
-          <label class="full">摘要<textarea id="nodeSummary"></textarea></label>
-          <label><input id="nodePublished" type="checkbox"> 已發布</label>
+          <label>來源名稱<input id="importSourceLabel" value="全華課本" placeholder="全華課本"></label>
+          <label>章節提示（不知道可留白）<input id="importChapterHint" placeholder="例如 1-3-2"></label>
+          <label>頁碼（不知道可留白）<input id="importPageRange" placeholder="例如 25–29"></label>
+          <label class="full">選擇照片或 PDF<input id="sourceFile" type="file" accept="image/*,application/pdf" multiple></label>
         </div>
-        <div class="adminActions">
-          <button id="saveNodeBtn" class="primary" type="button">儲存節點</button>
-          <button id="addChildBtn" type="button">新增子節點</button>
-        </div>
+        <button id="saveSourceImportBtn" class="primary" type="button">上傳並存入待整理區</button>
+        <div id="sourceImportMessage" class="formMessage"></div>
+        <div class="costNote"><strong>目前不必付費：</strong>上傳、儲存、閱讀、編輯、畫重點與同步都可先用現有免費方案。只有「網站自己用 AI 讀圖並自動排版」才需要另外串 AI API。</div>
       </section>
 
-      <section class="adminSection">
-        <h2>內容區段</h2>
-        <label>內容<select id="adminSectionSelect"></select></label>
-        <div class="formGrid">
-          <label>標題<input id="sectionTitle"></label>
-          <label>來源<input id="sectionSource"></label>
-          <label>來源類型<select id="sectionSourceType"><option value="textbook">全華課本</option><option value="note-a">筆記 A</option><option value="note-b">V3 筆記</option><option value="exam">題目／詳解</option><option value="personal">個人補充</option></select></label>
-          <label>排序<input id="sectionSort" type="number" step="1"></label>
-          <label class="full">正式課文 HTML<textarea id="sectionHtml" class="codeTextarea"></textarea></label>
-          <label class="full">純文字（供搜尋）<textarea id="sectionText"></textarea></label>
-          <label>驗證狀態<input id="sectionVerification" placeholder="verified-photo"></label>
-          <label><input id="sectionPublished" type="checkbox"> 已發布</label>
-        </div>
-        <div class="imageAdminRow">
-          <input id="sectionImageFile" type="file" accept="image/*,application/pdf">
-          <span id="sectionImagePath" class="muted"></span>
-        </div>
-        <div class="adminActions">
-          <button id="saveSectionBtn" class="primary" type="button">儲存內容</button>
-          <button id="addSectionBtn" type="button">新增內容區段</button>
-          <button id="uploadImageBtn" type="button">上傳圖片／PDF</button>
-        </div>
-      </section>
-
-      <section class="adminSection">
-        <h2>匯入 AI 更新包</h2>
-        <p class="muted">之後把新課本交給 ChatGPT 整理成 <code>ipas-update.json</code>，在這裡匯入即可。網站內容會直接更新，不需要重新部署。</p>
+      <section class="adminSection updateSection">
+        <p class="eyebrow">整批更新</p>
+        <h2>匯入整理好的課本更新包</h2>
+        <p class="muted">把 ChatGPT 整理好的 <code>ipas-update.json</code> 放進來，一次更新多個節點、課文與表格，不需要逐筆新增。</p>
         <input id="updatePackageFile" type="file" accept="application/json">
         <button id="importUpdatePackageBtn" type="button">匯入更新包</button>
         <progress id="updatePackageProgress" max="100" value="0"></progress>
         <div id="updatePackageMessage" class="formMessage"></div>
       </section>
 
-      <section class="adminSection">
-        <h2>新資料暫存區</h2>
-        <p class="muted">可先把每天的新照片或 PDF 存進資料庫，之後再整理到正式節點。</p>
-        <div class="formGrid">
-          <label>來源名稱<input id="importSourceLabel" placeholder="全華課本"></label>
-          <label>章節提示<input id="importChapterHint" placeholder="1-3-2"></label>
-          <label>頁碼<input id="importPageRange" placeholder="25–29"></label>
-          <label class="full">檔案<input id="sourceFile" type="file" accept="image/*,application/pdf"></label>
-        </div>
-        <button id="saveSourceImportBtn" type="button">存入暫存區</button>
-        <div id="sourceImportMessage" class="formMessage"></div>
-      </section>
+      <details class="advancedAdmin">
+        <summary>進階維修（平常不用打開）</summary>
+        <p class="muted">只有改單一錯字、標題、來源或排序時才使用。</p>
+
+        <section class="adminSection">
+          <h2>單一節點維修</h2>
+          <label>節點<select id="adminNodeSelect"></select></label>
+          <div class="formGrid">
+            <label>代碼<input id="nodeCode"></label>
+            <label>標題<input id="nodeTitle"></label>
+            <label>類型<select id="nodeKind"><option>concept</option><option>chapter</option><option>part</option><option>root</option></select></label>
+            <label>排序<input id="nodeSort" type="number" step="1"></label>
+            <label class="full">摘要<textarea id="nodeSummary"></textarea></label>
+            <label><input id="nodePublished" type="checkbox"> 已發布</label>
+          </div>
+          <div class="adminActions">
+            <button id="saveNodeBtn" class="primary" type="button">儲存節點</button>
+            <button id="addChildBtn" type="button">新增子節點</button>
+          </div>
+        </section>
+
+        <section class="adminSection">
+          <h2>單一內容區段維修</h2>
+          <label>內容<select id="adminSectionSelect"></select></label>
+          <div class="formGrid">
+            <label>標題<input id="sectionTitle"></label>
+            <label>來源<input id="sectionSource"></label>
+            <label>來源類型<select id="sectionSourceType"><option value="textbook">全華課本</option><option value="note-a">筆記 A</option><option value="note-b">V3 筆記</option><option value="exam">題目／詳解</option><option value="personal">個人補充</option></select></label>
+            <label>排序<input id="sectionSort" type="number" step="1"></label>
+            <label class="full">正式課文 HTML<textarea id="sectionHtml" class="codeTextarea"></textarea></label>
+            <label class="full">純文字（供搜尋）<textarea id="sectionText"></textarea></label>
+            <label>驗證狀態<input id="sectionVerification" placeholder="verified-photo"></label>
+            <label><input id="sectionPublished" type="checkbox"> 已發布</label>
+          </div>
+          <div class="imageAdminRow">
+            <input id="sectionImageFile" type="file" accept="image/*,application/pdf">
+            <span id="sectionImagePath" class="muted"></span>
+          </div>
+          <div class="adminActions">
+            <button id="saveSectionBtn" class="primary" type="button">儲存內容</button>
+            <button id="addSectionBtn" type="button">新增內容區段</button>
+            <button id="uploadImageBtn" type="button">上傳圖片／PDF</button>
+          </div>
+        </section>
+      </details>
     </div>
+
   </aside>
 
   <script src="config.js"></script>
